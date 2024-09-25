@@ -1,0 +1,71 @@
+﻿@page "/search"
+@using MovieSearchBlazorApp.Models
+@using MovieSearchBlazorApp.Services
+@inject MovieService MovieService
+@inject NavigationManager NavigationManager
+@inject AuthenticationStateProvider AuthStateProvider
+
+<AuthorizeView>
+    <Authorized>
+
+        <h1 class="text-center mb-4">Movie Search</h1>
+        <div class="row mb-5 justify-content-center">
+            <div class="col-md-6">
+                <div class="input-group">
+                    <input class="form-control"
+                           role="search"
+                           @bind="searchQuery"
+                           placeholder="Enter movie title"
+                           aria-label="Search" />
+                    <button class="btn btn-outline-success" @onclick="SearchMovies">Search</button>
+                </div>
+            </div>
+        </div>
+
+
+        @if (movies != null)
+        {
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th>Year</th>
+                        <th>Type</th>
+                        <th>Poster</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var movie in movies)
+                    {
+                        <tr @onclick="() => ShowMovieDetails(movie.ImdbID)">
+                            <td>@movie.Title</td>
+                            <td>@movie.Year</td>
+                            <td>@movie.Type</td>
+                            <td><img src="@movie.Poster" alt="@movie.Title" style="width:100px" /></td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+
+        @code {
+        private string searchQuery;
+        private MovieSearchResult[] movies;
+
+        private async Task SearchMovies()
+        {
+            movies = await MovieService.SearchMoviesAsync(searchQuery);
+        }
+
+        private void ShowMovieDetails(string imdbID)
+        {
+            NavigationManager.NavigateTo($"/movie/{imdbID}");
+        }
+        }
+
+    </Authorized>
+    <NotAuthorized>
+        <h3>You are not authorized to view this page. Please log in.</h3>
+        <NavLink href="/login">Login</NavLink>
+    </NotAuthorized>
+</AuthorizeView>
